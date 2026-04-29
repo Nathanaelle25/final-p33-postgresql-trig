@@ -39,7 +39,23 @@ PostgreSQL trigger, view, stored procedure ve window function'lar kullanılarak 
 ### 📸 Demo
 Ekran görüntüleri `repo/docs/screenshots/` klasöründedir.  
 
-### 📜 Lisans
+### 📚 Kaynakça
+- PostgreSQL Resmi Dokümantasyonu
+- OWASP Top 10 Güvenlik Rehberi
+- Stack Overflow (PL/pgSQL tartışmaları)
+- ReportLab Dokümantasyonu (PDF oluşturma)
+- Statista 2024 Veritabanı Pazar Raporu
+- DB-Engines Sıralaması
+
+### 📚 Sources
+- PostgreSQL Official Documentation
+- OWASP Top 10 Guidelines
+- Stack Overflow (PL/pgSQL triggers)
+- ReportLab documentation (Python PDF)
+- Statista 2024 Database Market Report
+- DB-Engines Ranking
+
+### 📜 License
 MIT © 2026 Nathanaelle Bopti Ngah Bong
 
 ---

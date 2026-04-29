@@ -229,6 +229,16 @@ Bu proje, **Bitlis Eren Üniversitesi — Bilgisayar Mühendisliği** bölümün
 
 ---
 
+## 📚 Kaynakça (Sources)
+- **PostgreSQL Official Documentation** — [Link](https://www.postgresql.org/docs/)
+- **OWASP Top 10 Guidelines** — [Link](https://owasp.org/www-project-top-ten/)
+- **Stack Overflow** — PL/pgSQL triggers and function discussions.
+- **ReportLab Documentation** — Python PDF generation library.
+- **Statista 2024 Database Market Report** — Market trend analysis.
+- **DB-Engines Ranking** — Database popularity metrics.
+
+---
+
 ## 📜 Lisans
 MIT © 2026 **Nathanaelle Bopti Ngah Bong**
 

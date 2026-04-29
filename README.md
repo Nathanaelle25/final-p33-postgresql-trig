@@ -166,6 +166,31 @@ WHERE created_at >= '2026-04-01' AND created_at < '2026-05-01';
 
 ---
 
+## 🔍 Index Performance Demo
+Veritabanı sorgularının hızını artırmak için `products` tablosundaki `name` alanı indekslenmiştir. Aşağıda indeksli ve indekssiz sorgu arasındaki fark görülmektedir:
+
+### 1. İndekssiz (Sequential Scan)
+Veritabanı tüm satırları tek tek kontrol eder.
+```text
+Seq Scan on products (actual time=0.090..0.162 rows=1 loops=1)
+  Filter: (name = 'Product 500')
+  Rows Removed by Filter: 1004
+```
+![Seq Scan](repo/docs/screenshots/index_seq_scan.png)
+
+### 2. İndeksli (Index Scan)
+Veritabanı indeksi kullanarak doğrudan ilgili kayda gider.
+```text
+Index Scan using idx_products_name on products (actual time=0.077..0.077 rows=1 loops=1)
+  Index Cond: (name = 'Product 500')
+```
+![Index Scan](repo/docs/screenshots/index_index_scan.png)
+
+> [!IMPORTANT]
+> İndeks kullanımı, veri seti büyüdükçe (milyonlarca satır) milisaniyeler ile saniyeler arasındaki farkı yaratır.
+
+---
+
 ## 🧪 Testler
 ```bash
 npm test

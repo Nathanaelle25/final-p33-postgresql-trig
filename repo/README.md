@@ -1,50 +1,169 @@
-# repo/ — Projenin Kaynak Kodu
+# PostgreSQL Trigger/View/SP
 
-Bu klasör, **projenizin tüm kaynak kodunu** barındırır. GitHub'a push edeceğiniz repo'nuzun aynen buraya gelmesi beklenir. Kendi iç yapınıza göre düzenleyin — dayatma yok.
+> **PostgreSQL'in gücünü keşfet — trigger, view, stored procedure ile Fat Database Mimari**
 
-## Önerilen Yapı (Örnek)
+![Zorluk](https://img.shields.io/badge/Zorluk-Zor-red)
+![Puan](https://img.shields.io/badge/Puan-55-blue)
+![Hafta](https://img.shields.io/badge/Hafta-4-gray)
+![Lisans](https://img.shields.io/badge/License-MIT-green)
+![Durum](https://img.shields.io/badge/Durum-Tamamlandı-success)
 
-Bir full-stack projesi için tipik yerleşim şöyle olabilir (uyarlayın):
+## 🎯 Özet
 
+Bu proje, "Fat Database, Thin Application" mimarisini kullanarak geliştirilmiş gelişmiş bir envanter yönetimi backend sistemidir. İş mantığının büyük bir kısmı (stok düşme, uyarı mekanizmaları, trend analizi) Node.js uygulama katmanı yerine PostgreSQL içinde; Trigger'lar, View'lar, Stored Procedure'lar ve Window Function'lar kullanılarak çözülmüştür. Bu yaklaşım veri tutarlılığını artırır ve ACID garantilerini tam anlamıyla kullanır.
+
+## ✨ Ana Özellikler
+
+- ✅ **Trigger** — Sipariş eklendiğinde otomatik stok düşürme (`trg_deduct_stock`)
+- ✅ **Trigger** — Kritik stok seviyesi uyarısı (`trg_check_low_stock`)
+- ✅ **View** — Düşük stoklu ürünler raporu (`v_low_stock_products`)
+- ✅ **View** — Günlük satış özetleri (`v_daily_sales_summary`)
+- ✅ **Stored Procedure** — Atomik sipariş oluşturma, Row-level lock (`sp_create_order`)
+- ✅ **Window Functions** — Son 30 günlük satış trendi, LAG, LEAD, RANK (`v_sales_trend_30days`)
+- ✅ **Transaction Isolation** — SERIALIZABLE transaction demosu
+- ✅ **Backend** — Hafif Node.js + Express REST API katmanı
+- ✅ **Reporting** — Python ile PDF envanter raporu üretimi
+
+## 🧰 Tech Stack
+
+**Database:** `PostgreSQL 18`  
+**App:** `Node.js + Express`  
+**DB Client:** `node-postgres (pg)`  
+**Scripting (Rapor):** `Python + reportlab + psycopg`  
+**Admin UI:** `pgAdmin 4`  
+
+## 🏗 Mimari
+- Tüm veritabanı şeması ve iş mantığı `migrations/` klasöründe SQL dosyaları olarak tutulmaktadır.
+- Node.js uygulaması sadece HTTP isteklerini karşılar ve karmaşık işlemleri veritabanındaki fonksiyonlara devreder.
+
+### Veritabanı İlişki Diyagramı (ERD)
+
+```mermaid
+erDiagram
+    products ||--o{ order_items : "contains"
+    orders ||--o{ order_items : "has"
+    products ||--o{ stock_movements : "tracks"
+    products ||--o{ alerts : "triggers"
+    
+    products {
+        int id PK
+        varchar name
+        int stock
+        int min_stock_level
+    }
+    orders {
+        int id PK
+        varchar status
+        numeric total_amount
+    }
+    order_items {
+        int id PK
+        int order_id FK
+        int product_id FK
+        int quantity
+    }
+    stock_movements {
+        int id PK
+        int product_id FK
+        varchar movement_type
+    }
+    alerts {
+        int id PK
+        varchar alert_type
+    }
+    audit_log {
+        int id PK
+        varchar table_name
+        varchar action
+    }
 ```
-repo/
-├── README.md                # Projenizin kendi README'si (kurulum, tech stack, demo link)
-├── LICENSE                  # Ana klasördeki LICENSE'ı buraya da kopyalayabilirsiniz
-├── package.json             # Node / pyproject.toml / Cargo.toml / go.mod ...
-├── .env.example             # Ortam değişkeni şablonu
-├── .gitignore
-├── src/                     # Kaynak kod
-├── tests/                   # Testler
-├── public/ veya static/     # Statik dosyalar
-├── docs/                    # (isteğe bağlı) Proje içi teknik doküman
-│   ├── screenshots/         # Ekran görüntüleri
-│   └── diagrams/            # Mimari / ERD / user flow diyagramları
-└── .github/workflows/ci.yml # CI/CD
+
+## 📁 Proje Yapısı
+
+```text
+.
+├── migrations/
+│   ├── 001_create_tables.sql
+│   ├── 002_create_triggers.sql
+│   ├── 003_create_views.sql
+│   ├── 004_stored_procedures.sql
+│   ├── 005_window_functions.sql
+│   ├── 006_indexes_partitioning.sql
+│   └── 007_seed_data.sql
+├── src/
+│   └── index.js
+├── scripts/
+│   ├── migrate.js
+│   └── generate_pdf_report.py
+├── repo/
+│   ├── .gitkeep
+│   └── README.md
+├── package.json
+├── PROJE-RAPORU.md
+└── README.md
 ```
 
-## Önemli
+## 🚀 Kurulum
 
-- **PROJE-RAPORU.md** ve **PROJE-RAPORU-SABLON.docx** (bir üst klasörde) — final rapor belgeleridir, bu `repo/` klasöründe değildirler. Onlar sizin ders raporunuz.
-- **Ekran görüntüleri ve diyagramlar** için ayrı bir yapı zorunlu tutulmamıştır. Kendi repo'nuzdaki `docs/` veya `screenshots/` gibi alt klasörlerde tutabilirsiniz. Rapor belgesinde onlara referans verirsiniz.
-- **Demo video / GIF**: 30-60 saniyelik bir demo kaydı önerilir ([ScreenToGif](https://www.screentogif.com), [Kap](https://getkap.co), [Loom](https://loom.com)).
+### Gereksinimler
+- PostgreSQL ≥ 15 (Projede 18 kullanılmıştır)
+- Node.js ≥ 18
+- Python 3 (Raporlama için)
 
-## Önerilen Ekran Görüntüsü Listesi (Rapora Eklenecek)
+### Adım Adım
 
-Final raporunda şu görüntüleri göstermeniz beklenir:
+```bash
+# 1) Repo'yu klonla ve klasöre gir
+git clone https://github.com/Nathanaelle25/final-p33-postgresql-trig.git
+cd final-p33-postgresql-trig
 
-1. Ana sayfa / landing
-2. Kayıt veya giriş ekranı
-3. Dashboard — boş hali (empty state)
-4. Dashboard — dolu hali (seed data ile)
-5. Ana kaynak detay sayfası
-6. Mobile (responsive) görünüm
-7. Hata durumu (404 veya form validation)
-8. (varsa) Koyu mod
+# 2) Environment dosyası
+cp .env.example .env
+# .env içindeki veritabanı parolasını kendi sisteminize göre güncelleyin.
 
-**İpuçları:** 1920×1080 veya 1440×900 çözünürlük, PNG formatı (JPG kayıplı), Chrome DevTools Device Mode mobile için.
+# 3) Bağımlılıkları yükle
+npm install
 
-## Ne Zaman Buraya Push Etmeli?
+# 4) Veritabanını hazırla (Migration ve Seed)
+npm run migrate
 
-- Ya `repo/` klasörünü doğrudan kullanın (git init burada yapın).
-- Ya da dışarıda ayrı bir repo tutup, teslimat sırasında `repo/` içine **klon** veya **submodule** olarak ekleyin.
-- Hangi yöntemi seçerseniz seçin, teslim edilen zip veya GitHub link'inde `repo/` klasöründe çalışan kodun bulunması yeterlidir.
+# 5) Sunucuyu Çalıştır
+npm run dev
+# Proje http://localhost:3000 portunda çalışacaktır.
+```
+
+### PDF Raporu Alma (Opsiyonel)
+```bash
+pip install -r requirements.txt
+python scripts/generate_pdf_report.py
+```
+
+## 📡 API Endpoints
+
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/api/products?search=keyword` | Tüm ürünleri listele / Ara |
+| POST | `/api/orders` | Yeni sipariş oluştur (Atomik SP çağrısı) |
+| GET | `/api/reports/trend` | Son 30 günlük satış trendi (Window Functions) |
+| GET | `/api/demo/isolation` | Isolation Level (Serializable) Demosu |
+
+## 🤝 Katkı
+
+Bu proje **BMU1208 Web Tabanlı Programlama** dersi kapsamında **Bitlis Eren Üniversitesi** — **Bilgisayar Mühendisliği** bölümünde bir final ödevi olarak geliştirilmiştir.
+
+Ders yürütücüsü: **Dr. Öğr. Üyesi Davut ARI**
+
+## 📜 Lisans
+
+MIT © 2026 **Nathanaelle Bopti Ngah Bong** — Tam metin için [LICENSE](LICENSE).
+
+## 🙋‍♂️ İletişim
+
+- **Öğrenci:** Nathanaelle Bopti Ngah Bong
+- **Öğrenci No:** 24080410150
+- **E-posta:** ngahbongnathy@gmail.com
+- **Ders:** BMU1208 · Web Tabanlı Programlama
+- **Kurum:** Bitlis Eren Üniversitesi — Mühendislik-Mimarlık Fakültesi
+
+---
+<sub>🤖 Bu projede AI asistanları kullanılmıştır. Tüm mimari kararlar ve kullanım tercihleri öğrenci tarafından yapılmıştır.</sub>

@@ -30,6 +30,58 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
+// GET /api/products/:id
+app.get('/api/products/:id', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM products WHERE id = $1', [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ error: 'Product not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/products
+app.post('/api/products', async (req, res) => {
+  const { name, sku, price, stock, category } = req.body;
+  try {
+    const { rows } = await pool.query(
+      'INSERT INTO products (name, sku, price, stock, category) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [name, sku, price, stock, category]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// PUT /api/products/:id
+app.put('/api/products/:id', async (req, res) => {
+  const { name, price, stock, category } = req.body;
+  try {
+    const { rows } = await pool.query(
+      'UPDATE products SET name = $1, price = $2, stock = $3, category = $4 WHERE id = $5 RETURNING *',
+      [name, price, stock, category, req.params.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Product not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// DELETE /api/products/:id
+app.delete('/api/products/:id', async (req, res) => {
+  try {
+    const { rowCount } = await pool.query('DELETE FROM products WHERE id = $1', [req.params.id]);
+    if (rowCount === 0) return res.status(404).json({ error: 'Product not found' });
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // POST /api/orders : Call sp_create_order, catch SQL exception and return 400
 app.post('/api/orders', async (req, res) => {
   const { customer_name, items } = req.body;

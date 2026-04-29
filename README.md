@@ -155,7 +155,7 @@ npm start
 ## 🎥 API Demo Kaydı
 Sistemin tüm uç noktalarının (endpoints) nasıl çalıştığını gösteren kısa demo kaydı:
 
-![API Demo Recording](repo/docs/recordings/api_demo.webp)
+![API Demo Recording](repo/docs/recordings/demo.gif)
 
 ### API Yanıt Örnekleri (JSON)
 | Endpoint | Açıklama | Ekran Görüntüsü |

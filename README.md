@@ -152,29 +152,17 @@ npm start
 
 ---
 
-## ⚡ Partitioning Demosu
-Büyük veri setlerinde performansı optimize etmek için `stock_movements` tablosu `created_at` alanına göre aylık bazda bölümlenmiştir (Partitioning).
+## ⚡ Partitioning Demo
+The `stock_movements` table is partitioned by month. Queries automatically target the correct partition:
 
-### Bölümleme Testi (EXPLAIN ANALYZE)
-Aşağıdaki sorgu sadece Nisan 2026 verilerini istediğinde, PostgreSQL tüm tabloyu taramak yerine sadece ilgili bölümü (`stock_movements_2026_04`) tarar:
+![Partitioning Demo](repo/docs/screenshots/partitioning_demo.png.png)
 
+Example query:
 ```sql
-EXPLAIN ANALYZE 
-SELECT * FROM stock_movements 
+EXPLAIN ANALYZE
+SELECT * FROM stock_movements
 WHERE created_at >= '2026-04-01' AND created_at < '2026-05-01';
 ```
-
-**Sorgu Planı Çıktısı:**
-```text
-Seq Scan on stock_movements_2026_04 stock_movements (actual time=0.022..0.023 rows=2 loops=1)
-  Filter: ((created_at >= '2026-04-01'...) AND (created_at < '2026-05-01'...))
-Planning Time: 0.946 ms
-Execution Time: 0.047 ms
-```
-> [!TIP]
-> Bu teknik, milyonlarca satır veri olduğunda disk I/O yükünü %90'dan fazla azaltabilir.
-
-![Partitioning Demo](repo/docs/screenshots/06_migration_terminal.png.jpeg)
 
 ---
 

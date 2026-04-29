@@ -66,7 +66,7 @@ DROP TABLE IF EXISTS stock_movements CASCADE;
 CREATE TABLE stock_movements (
     id SERIAL,
     product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-    movement_type VARCHAR(10) NOT NULL CHECK (movement_type IN ('IN', 'OUT')),
+    movement_type VARCHAR(10) NOT NULL CHECK (movement_type IN ('IN', 'OUT', 'SALE')),
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     reference_info VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

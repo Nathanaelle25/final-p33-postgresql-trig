@@ -1,3 +1,6 @@
+DROP VIEW IF EXISTS v_low_stock_products, v_daily_sales_summary CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS mv_product_performance CASCADE;
+
 -- 1. View: Low Stock Products
 CREATE OR REPLACE VIEW v_low_stock_products AS
 SELECT 

@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS audit_log, alerts, stock_movements, order_items, orders, products CASCADE;
+
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,

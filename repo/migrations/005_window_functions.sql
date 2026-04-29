@@ -1,3 +1,5 @@
+DROP VIEW IF EXISTS v_sales_trend_30days CASCADE;
+
 CREATE OR REPLACE VIEW v_sales_trend_30days AS
 WITH daily_revenue AS (
     SELECT 

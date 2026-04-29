@@ -1,0 +1,10 @@
+node_modules/
+.env
+*.log
+.DS_Store
+dist/
+build/
+bin/
+obj/
+*.pdf
+repo/node_modules/

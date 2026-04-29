@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS audit_log, alerts, stock_movements, order_items, orders, products CASCADE;
+DROP TABLE IF EXISTS audit_log, alerts, stock_movements, order_items, orders, products, users CASCADE;
 
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
@@ -53,4 +53,10 @@ CREATE TABLE audit_log (
     old_data JSONB,
     new_data JSONB,
     changed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

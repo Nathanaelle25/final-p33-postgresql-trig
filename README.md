@@ -152,6 +152,20 @@ npm start
 
 ---
 
+## 🎥 API Demo Kaydı
+Sistemin tüm uç noktalarının (endpoints) nasıl çalıştığını gösteren kısa demo kaydı:
+
+![API Demo Recording](repo/docs/recordings/api_demo.webp)
+
+### API Yanıt Örnekleri (JSON)
+| Endpoint | Açıklama | Ekran Görüntüsü |
+| :--- | :--- | :--- |
+| `GET /api/products` | Ürün Listesi | [Görüntüle](repo/docs/screenshots/api_products.png) |
+| `GET /api/reports/trend` | Satış Trendi | [Görüntüle](repo/docs/screenshots/api_reports_trend.png) |
+| `GET /api/demo/isolation` | İzolasyon Testi | [Görüntüle](repo/docs/screenshots/api_isolation.png) |
+
+---
+
 ## ⚡ Partitioning Demo
 The `stock_movements` table is partitioned by month. Queries automatically target the correct partition:
 

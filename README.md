@@ -155,11 +155,11 @@ Ders yürütücüsü: **Dr. Öğr. Üyesi Davut ARI**
 
 ## 📜 Lisans
 
-MIT © 2026 **NATHANAELLE BOPTI NGAH BONG** — Tam metin için [LICENSE](LICENSE).
+MIT © 2026 **Nathanaelle Bopti Ngah Bong** — Tam metin için [LICENSE](LICENSE).
 
 ## 🙋‍♂️ İletişim
 
-- **Öğrenci:** NATHANAELLE BOPTI NGAH BONG
+- **Öğrenci:** Nathanaelle Bopti Ngah Bong
 - **Öğrenci No:** 24080410150
 - **E-posta:** ngahbongnathy@gmail.com
 - **Ders:** BMU1208 · Web Tabanlı Programlama

@@ -31,7 +31,7 @@ def generate_report():
         rows = cur.fetchall()
 
         # Create PDF document
-        pdf_file = "Inventory_Report.pdf"
+        pdf_file = "PROJE-RAPORU-Nathanaelle-Bopti-Ngah-Bong.pdf"
         doc = SimpleDocTemplate(pdf_file, pagesize=letter)
         elements = []
 
@@ -40,8 +40,11 @@ def generate_report():
         title_style = styles['Title']
         normal_style = styles['Normal']
 
-        # Header: Title and Date
-        elements.append(Paragraph("Current Inventory Status", title_style))
+        # Header: Title, Author, and Date
+        elements.append(Paragraph("BMU1208 Web Tabanlı Programlama Final Projesi - PostgreSQL Trigger/View/SP", title_style))
+        elements.append(Spacer(1, 12))
+        elements.append(Paragraph("Author: Nathanaelle Bopti Ngah Bong (Bilgisayar Mühendisliği)", normal_style))
+        elements.append(Spacer(1, 12))
         elements.append(Spacer(1, 12))
         
         current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

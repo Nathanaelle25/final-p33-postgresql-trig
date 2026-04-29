@@ -2,7 +2,7 @@
 
 > **Proje Kodu:** P33 · **Zorluk:** Zor · **Puan:** 55 · **Hafta:** 4
 
-**Öğrenci:** NATHANAELLE BOPTI NGAH BONG  
+**Öğrenci:** Nathanaelle Bopti Ngah Bong  
 **Öğrenci No:** 24080410150  
 **E-posta:** ngahbongnathy@gmail.com  
 **Ders:** BMU1208 Web Tabanlı Programlama — *Dr. Öğr. Üyesi Davut ARI*  

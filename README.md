@@ -33,10 +33,15 @@ Bu proje, "Fat Database, Thin Application" (Şişman Veritabanı, Zayıf Uygulam
 | :---: | :---: | :---: |
 | ![Products](repo/docs/screenshots/01-api-products.png.png) | ![Orders](repo/docs/screenshots/07_api_isolation.png.jpeg) | ![Reports](repo/docs/screenshots/05_api_search.png.jpeg) |
 
-### Diğer Ekran Görüntüleri
+### Veritabanı ve Arka Plan İşlemleri
 | Veritabanı Yapısı | Migration İşlemleri | Denetim Günlüğü (Audit) |
 | :---: | :---: | :---: |
 | ![DB Structure](repo/docs/screenshots/02_db_structure.png) | ![Migration](repo/docs/screenshots/06_migration_terminal.png.jpeg) | ![Audit Log](repo/docs/screenshots/04_audit_log.png.jpeg) |
+
+### Tetikleyici (Trigger) ve Güvenlik Mekanizmaları
+| Stok Uyarısı (Low Stock) | Transaction İzolasyonu | Performans İndeksi |
+| :---: | :---: | :---: |
+| ![Trigger Alert](repo/docs/screenshots/03_trigger_alert.png.jpeg) | ![Isolation](repo/docs/screenshots/api_isolation.png) | ![Index Scan](repo/docs/screenshots/index_index_scan.png) |
 
 ---
 
@@ -164,6 +169,7 @@ Sistemin tüm uç noktalarının (endpoints) nasıl çalıştığını gösteren
 | `GET /api/products` | Ürün Listesi | [Görüntüle](repo/docs/screenshots/api_products.png) |
 | `GET /api/reports/trend` | Satış Trendi | [Görüntüle](repo/docs/screenshots/api_reports_trend.png) |
 | `GET /api/demo/isolation` | İzolasyon Testi | [Görüntüle](repo/docs/screenshots/api_isolation.png) |
+| `GET /api/alerts` | Kritik Uyarılar | [Görüntüle](repo/docs/screenshots/03_trigger_alert.png.jpeg) |
 
 ---
 
@@ -207,9 +213,16 @@ Index Scan using idx_products_name on products (actual time=0.077..0.077 rows=1 
 ---
 
 ## 🧪 Testler
+Sistem güvenilirliği ve API bütünlüğü Supertest kullanılarak test edilmektedir.
+
 ```bash
 npm test
 ```
+
+### Test Çıktısı
+Aşağıdaki ekran görüntüsü, tüm API uç noktalarının (ürünler, raporlar, siparişler) başarıyla test edildiğini göstermektedir:
+
+![API Test Results](repo/docs/screenshots/api-test.jpg.png)
 
 ---
 

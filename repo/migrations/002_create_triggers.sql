@@ -2,6 +2,14 @@
 CREATE OR REPLACE FUNCTION fn_deduct_stock()
 RETURNS TRIGGER AS $$
 BEGIN
+    -- Check if stock is sufficient
+    IF (SELECT stock FROM products WHERE id = NEW.product_id) < NEW.quantity THEN
+        RAISE EXCEPTION 'Insufficient stock for product ID %. Available: %, Requested: %',
+            NEW.product_id,
+            (SELECT stock FROM products WHERE id = NEW.product_id),
+            NEW.quantity;
+    END IF;
+
     -- Deduct stock from products table
     UPDATE products
     SET stock = stock - NEW.quantity,

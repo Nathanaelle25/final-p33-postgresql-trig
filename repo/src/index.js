@@ -106,6 +106,54 @@ app.get('/api/reports/trend', async (req, res) => {
   }
 });
 
+// GET /api/reports/daily-sales : Query the v_daily_sales_summary view.
+app.get('/api/reports/daily-sales', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM v_daily_sales_summary ORDER BY sale_date DESC');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/alerts : Query the alerts table.
+app.get('/api/alerts', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM alerts ORDER BY created_at DESC');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/audit-log : Query the audit_log table.
+app.get('/api/audit-log', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM audit_log ORDER BY changed_at DESC LIMIT 50');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/products/:id/restock : Increase stock for a product.
+app.post('/api/products/:id/restock', async (req, res) => {
+  const { quantity } = req.body;
+  if (!quantity || quantity <= 0) {
+    return res.status(400).json({ error: 'Invalid quantity' });
+  }
+  try {
+    const { rows } = await pool.query(
+      'UPDATE products SET stock = stock + $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+      [quantity, req.params.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Product not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 // GET /api/demo/isolation : explicit BEGIN SERIALIZABLE, read low stock view, COMMIT
 app.get('/api/demo/isolation', async (req, res) => {
   const client = await pool.connect();
@@ -123,7 +171,11 @@ app.get('/api/demo/isolation', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server listening on port ${PORT}`);
+  });
+}
+
+module.exports = app;

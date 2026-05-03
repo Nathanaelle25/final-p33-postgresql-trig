@@ -21,6 +21,8 @@
         <div class="button-group">
             <button onclick="runCall('/api/products', 'GET')">📦 GET /api/products</button>
             <button onclick="runCall('/api/reports/trend', 'GET')">📈 GET /api/reports/trend</button>
+            <button onclick="runCall('/api/reports/daily-sales', 'GET')">📊 GET /api/reports/daily-sales</button>
+            <button onclick="runCall('/api/alerts', 'GET')">🔔 GET /api/alerts</button>
             <button onclick="runCall('/api/demo/isolation', 'GET')">🛡️ GET /api/demo/isolation</button>
             <button onclick="createOrder()">🛒 POST /api/orders</button>
         </div>
@@ -35,7 +37,7 @@
         async function runCall(url, method) {
             status.innerText = `Calling ${method} ${url}...`;
             try {
-                const res = await fetch('http://localhost:3000' + url);
+                const res = await fetch(url);
                 const data = await res.json();
                 output.innerText = JSON.stringify(data, null, 2);
                 status.innerText = `Success: ${url}`;
@@ -48,7 +50,7 @@
         async function createOrder() {
             status.innerText = 'Creating order...';
             try {
-                const res = await fetch('http://localhost:3000/api/orders', {
+                const res = await fetch('/api/orders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

@@ -1,9 +1,13 @@
 const express = require('express');
+const cors = require('cors');
+const path = require('path');
 const { Pool } = require('pg');
 require('dotenv').config();
 
 const app = express();
+app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '..'))); // Serve static files from repo directory
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL

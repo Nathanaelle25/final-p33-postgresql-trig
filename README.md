@@ -23,6 +23,7 @@ Bu proje, "Fat Database, Thin Application" (Şişman Veritabanı, Zayıf Uygulam
 
 ## 🎥 Demo
 **🔗 Yerel Demo:** http://localhost:3000  
+**📊 API Demo Dashboard:** http://localhost:3000/api_demo.html  
 **👤 Demo Hesabı:** `demo@example.com` · `demo123`
 
 ---
@@ -58,6 +59,7 @@ Bu proje, "Fat Database, Thin Application" (Şişman Veritabanı, Zayıf Uygulam
 ✅ **Transaction Isolation:** Serializable demo endpoint'i  
 ✅ **JSONB + Full-text Search:** Esnek ürün özellikleri ve hızlı metin arama  
 ✅ **Partitioning:** Büyük tablolarda performans demosu  
+✅ **CORS & Static Serving:** Geliştirilmiş güvenlik ve yerleşik demo dashboard desteği  
 
 ---
 
@@ -162,6 +164,12 @@ Sistemin tüm uç noktalarının (endpoints) nasıl çalıştığını gösteren
 
 ![API Demo Recording 1](repo/docs/recordings/demo.gif)
 ![API Demo Recording 2](repo/docs/recordings/demo_api.gif)
+![API Demo Dashboard](repo/docs/recordings/demo-apı.gif)
+
+### 📊 İnteraktif API Dashboard
+Artık API'lerinizi test etmek için harici bir araç (Postman, curl vb.) kullanmanıza gerek yok! Sunucu üzerinden erişilebilen yerleşik dashboard ile tüm işlemleri görsel olarak yapabilirsiniz:
+- **Konum:** `http://localhost:3000/api_demo.html`
+- **Özellikler:** Ürün arama, sipariş oluşturma, günlük satış raporları ve sistem uyarılarını anlık olarak görüntüleme.
 
 ### API Yanıt Örnekleri (JSON)
 | Endpoint | Açıklama | Ekran Görüntüsü |

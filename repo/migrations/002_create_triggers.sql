@@ -33,11 +33,16 @@ EXECUTE FUNCTION fn_deduct_stock();
 CREATE OR REPLACE FUNCTION fn_check_low_stock()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Avoid infinite loop: only alert if the stock actually went below min_stock_level during this update
-    -- and wasn't already below it before this exact update.
+    -- 1. Alert for any stock decrease
+    IF NEW.stock < OLD.stock THEN
+        INSERT INTO alerts (alert_type, message)
+        VALUES ('STOCK_DECREASE', 'Stock for ' || NEW.name || ' decreased. New balance: ' || NEW.stock);
+    END IF;
+
+    -- 2. Alert specifically for falling below minimum threshold
     IF NEW.stock < NEW.min_stock_level AND OLD.stock >= OLD.min_stock_level THEN
         INSERT INTO alerts (alert_type, message)
-        VALUES ('LOW_STOCK', 'Product ' || NEW.name || ' (SKU: ' || NEW.sku || ') fell below minimum stock level. Current stock: ' || NEW.stock);
+        VALUES ('LOW_STOCK', 'CRITICAL: Product ' || NEW.name || ' (SKU: ' || NEW.sku || ') fell below minimum stock level. Current stock: ' || NEW.stock);
     END IF;
     
     RETURN NEW;

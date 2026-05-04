@@ -30,7 +30,7 @@ BEGIN
         END IF;
 
         IF v_product_stock < v_item.quantity THEN
-            RAISE EXCEPTION 'Insufficient stock for Product ID %. Available: %, Requested: %', v_item.product_id, v_product_stock, v_item.quantity;
+            RAISE EXCEPTION 'Insufficient stock for product_id=%', v_item.product_id;
         END IF;
 
         -- Insert order item. The fn_deduct_stock trigger will automatically subtract stock.

@@ -235,6 +235,7 @@
                 <div>
                     <h3 style="color: var(--success); margin-bottom: 12px; font-size: 0.9rem; text-transform: uppercase;">2. Triggers & ACID</h3>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="primary" style="background: linear-gradient(135deg, var(--success), var(--primary));" onclick="runCall('/api/demo/trigger-workflow', 'GET')">🚀 Master Trigger Demo</button>
                         <button onclick="runCall('/api/audit-log', 'GET')">📜 Audit Logs (Trigger)</button>
                         <button onclick="runCall('/api/demo/isolation', 'GET')">🛡️ Isolation Demo (ACID)</button>
                         <button onclick="runCall('/api/demo/low-stock-view', 'GET')">⚠️ Low Stock (Alert Trig)</button>

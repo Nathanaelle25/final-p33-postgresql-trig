@@ -288,6 +288,47 @@ app.get('/api/demo/low-stock-view', async (req, res) => {
   }
 });
 
+// GET /api/demo/trigger-workflow : Full workflow demo (Order -> Trigger -> Audit/Alert)
+app.get('/api/demo/trigger-workflow', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // 1. Pick a product (e.g., ID 1)
+    const productBefore = await client.query('SELECT name, stock FROM products WHERE id = 1');
+    
+    // 2. Create an order (This fires triggers: fn_deduct_stock, fn_check_low_stock, fn_audit_log)
+    await client.query('CALL sp_create_order($1, $2)', ['Demo Workflow User', JSON.stringify([{ product_id: 1, quantity: 1 }])]);
+    
+    // 3. Get results
+    const productAfter = await client.query('SELECT name, stock FROM products WHERE id = 1');
+    const audit = await client.query('SELECT * FROM audit_log ORDER BY changed_at DESC LIMIT 1');
+    const alert = await client.query('SELECT * FROM alerts ORDER BY created_at DESC LIMIT 1');
+    
+    await client.query('COMMIT');
+
+    res.json({
+      message: "Trigger Workflow Demo: Placing an order has automatically fired multiple database triggers.",
+      workflow_steps: [
+        { step: "1. Order Created", details: "sp_create_order was called via API." },
+        { step: "2. Stock Deducted", details: `Trigger 'trg_deduct_stock' updated ${productBefore.rows[0].name} stock from ${productBefore.rows[0].stock} to ${productAfter.rows[0].stock}.` },
+        { step: "3. Audit Logged", details: `Trigger 'trg_audit_products' recorded the change. Action: ${audit.rows[0].action}.` },
+        { step: "4. Alert Checked", details: `Trigger 'trg_check_low_stock' generated an alert if stock fell below minimum: "${alert.rows[0]?.message || 'Stock still safe'}"` }
+      ],
+      database_evidence: {
+        product: productAfter.rows[0],
+        latest_audit: audit.rows[0],
+        latest_alert: alert.rows[0]
+      }
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {

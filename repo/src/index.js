@@ -59,12 +59,18 @@ app.post('/api/products', async (req, res) => {
   }
 });
 
-// PUT /api/products/:id
+// PUT /api/products/:id (Supports partial updates)
 app.put('/api/products/:id', async (req, res) => {
   const { name, price, stock, category } = req.body;
   try {
     const { rows } = await pool.query(
-      'UPDATE products SET name = $1, price = $2, stock = $3, category = $4 WHERE id = $5 RETURNING *',
+      `UPDATE products 
+       SET name = COALESCE($1, name), 
+           price = COALESCE($2, price), 
+           stock = COALESCE($3, stock), 
+           category = COALESCE($4, category),
+           updated_at = CURRENT_TIMESTAMP 
+       WHERE id = $5 RETURNING *`,
       [name, price, stock, category, req.params.id]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Product not found' });

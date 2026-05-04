@@ -214,7 +214,7 @@ app.get('/api/demo/isolation', async (req, res) => {
     await new Promise(resolve => setTimeout(resolve, 100));
     await client.query('COMMIT');
     res.json({ 
-      message: 'ACID Guarantee: Serializable transaction ensured no concurrent updates affected this view during the read.',
+      message: 'Serializable transaction successful. ACID Guarantee: Transaction ensured no concurrent updates affected this view during the read.',
       isolation_level: 'SERIALIZABLE',
       data: rows 
     });

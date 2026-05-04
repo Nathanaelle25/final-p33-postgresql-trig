@@ -86,16 +86,47 @@ app.delete('/api/products/:id', async (req, res) => {
 });
 
 
-// POST /api/orders : Call sp_create_order, catch SQL exception and return 400
+// POST /api/orders : Call sp_create_order and return detailed order summary
 app.post('/api/orders', async (req, res) => {
   const { customer_name, items } = req.body;
+  const client = await pool.connect();
   try {
-    // items should be an array of objects e.g. [{"product_id": 1, "quantity": 2}]
-    await pool.query('CALL sp_create_order($1, $2)', [customer_name, JSON.stringify(items)]);
-    res.status(201).json({ message: 'Order created successfully' });
+    await client.query('BEGIN');
+    
+    // Call the procedure
+    await client.query('CALL sp_create_order($1, $2)', [customer_name, JSON.stringify(items)]);
+    
+    // Get the latest order ID for this customer
+    const orderResult = await client.query(
+      'SELECT id, total_amount, created_at FROM orders WHERE customer_name = $1 ORDER BY created_at DESC LIMIT 1',
+      [customer_name]
+    );
+    const order = orderResult.rows[0];
+    
+    // Get the items and updated stock for those products
+    const itemsResult = await client.query(
+      `SELECT oi.product_id, p.name, oi.quantity, oi.unit_price, p.stock as current_stock
+       FROM order_items oi
+       JOIN products p ON oi.product_id = p.id
+       WHERE oi.order_id = $1`,
+      [order.id]
+    );
+    
+    await client.query('COMMIT');
+
+    res.status(201).json({
+      message: 'Order created successfully',
+      order_id: order.id,
+      total_amount: order.total_amount,
+      created_at: order.created_at,
+      items: itemsResult.rows
+    });
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('Order creation error:', err.message);
     res.status(400).json({ error: err.message });
+  } finally {
+    client.release();
   }
 });
 
@@ -164,14 +195,83 @@ app.get('/api/demo/isolation', async (req, res) => {
   try {
     await client.query('BEGIN ISOLATION LEVEL SERIALIZABLE');
     const { rows } = await client.query('SELECT * FROM v_low_stock_products');
+    // Simulate some work
+    await new Promise(resolve => setTimeout(resolve, 100));
     await client.query('COMMIT');
-    res.json({ message: 'Serializable transaction successful', data: rows });
+    res.json({ 
+      message: 'ACID Guarantee: Serializable transaction ensured no concurrent updates affected this view during the read.',
+      isolation_level: 'SERIALIZABLE',
+      data: rows 
+    });
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Transaction error:', err);
     res.status(500).json({ error: 'Internal server error' });
   } finally {
     client.release();
+  }
+});
+
+// GET /api/demo/performance : Compare Index vs Sequential Scan
+app.get('/api/demo/performance', async (req, res) => {
+  try {
+    const results = {};
+    
+    // 1. Drop index
+    await pool.query('DROP INDEX IF EXISTS idx_products_name');
+    
+    // 2. Explan Seq Scan
+    const seq = await pool.query("EXPLAIN (ANALYZE, COSTS OFF, FORMAT JSON) SELECT * FROM products WHERE name = 'Product 500'");
+    results.sequential_scan = seq.rows[0]['QUERY PLAN'][0];
+    
+    // 3. Create index
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_products_name ON products(name)');
+    
+    // 4. Explain Index Scan
+    const idx = await pool.query("EXPLAIN (ANALYZE, COSTS OFF, FORMAT JSON) SELECT * FROM products WHERE name = 'Product 500'");
+    results.index_scan = idx.rows[0]['QUERY PLAN'][0];
+    
+    res.json({
+      message: "Performance Optimization: Comparing Sequential Scan (No Index) vs Index Scan.",
+      results
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/demo/partitioning : Show partition pruning
+app.get('/api/demo/partitioning', async (req, res) => {
+  try {
+    const plan = await pool.query(`
+      EXPLAIN (ANALYZE, COSTS OFF, FORMAT JSON)
+      SELECT * FROM stock_movements 
+      WHERE created_at >= CURRENT_DATE - INTERVAL '1 day'
+    `);
+    res.json({
+      message: "Partitioning Demo: Querying only the current month's partition.",
+      query_plan: plan.rows[0]['QUERY PLAN'][0]
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/demo/seed-sales : Generate random sales for last 30 days
+app.post('/api/demo/seed-sales', async (req, res) => {
+  try {
+    await pool.query(`
+      INSERT INTO orders (customer_name, status, total_amount, created_at)
+      SELECT 
+        'Bulk Seed ' || i, 
+        'COMPLETED', 
+        (random() * 500 + 50)::numeric(10,2),
+        CURRENT_DATE - (i % 30 || ' days')::interval
+      FROM generate_series(1, 100) s(i);
+    `);
+    res.json({ message: "30 days of sales data generated successfully for analytics demo." });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

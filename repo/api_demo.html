@@ -3,68 +3,391 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PostgreSQL API Demo</title>
+    <title>PostgreSQL Advanced API Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f1f5f9; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: #1e293b; padding: 20px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #38bdf8; }
-        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        button { padding: 12px; border: none; border-radius: 6px; background: #38bdf8; color: #0f172a; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #7dd3fc; transform: translateY(-2px); }
-        pre { background: #000; padding: 15px; border-radius: 8px; overflow-x: auto; color: #4ade80; border: 1px solid #334155; height: 300px; }
-        .status { margin-top: 10px; font-size: 0.9em; color: #94a3b8; }
+        :root {
+            --primary: #38bdf8;
+            --secondary: #818cf8;
+            --accent: #c084fc;
+            --bg: #0f172a;
+            --panel: rgba(30, 41, 59, 0.7);
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --success: #4ade80;
+            --error: #f87171;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .glass-panel {
+            background: var(--panel);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        button {
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--bg);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(56, 189, 248, 0.4);
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--bg);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 25px;
+        }
+
+        @media (max-width: 900px) {
+            .main-content { grid-template-columns: 1fr; }
+        }
+
+        .response-area {
+            position: relative;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        pre {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 16px;
+            overflow-x: auto;
+            color: #a5f3fc;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            height: 450px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .info-card h3 {
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .order-summary {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .summary-item span:first-child { color: var(--text-muted); }
+
+        .item-list {
+            margin-top: 15px;
+            font-size: 0.85rem;
+        }
+
+        .item-row {
+            padding: 8px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚀 API Demo Dashboard</h1>
-        <div class="button-group">
-            <button onclick="runCall('/api/products', 'GET')">📦 GET /api/products</button>
-            <button onclick="runCall('/api/reports/trend', 'GET')">📈 GET /api/reports/trend</button>
-            <button onclick="runCall('/api/reports/daily-sales', 'GET')">📊 GET /api/reports/daily-sales</button>
-            <button onclick="runCall('/api/alerts', 'GET')">🔔 GET /api/alerts</button>
-            <button onclick="runCall('/api/demo/isolation', 'GET')">🛡️ GET /api/demo/isolation</button>
-            <button onclick="createOrder()">🛒 POST /api/orders</button>
+        <header>
+            <h1>Fat Database Explorer</h1>
+            <p class="subtitle">Full-Stack Inventory & Atomic Transaction Demo</p>
+        </header>
+
+        <div class="glass-panel" style="margin-bottom: 25px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 25px;">
+                <!-- Transactions Section -->
+                <div>
+                    <h3 style="color: var(--secondary); margin-bottom: 12px; font-size: 0.9rem; text-transform: uppercase;">Transactions & Triggers</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="primary" onclick="createOrder()">🛒 Quick Order (SP)</button>
+                        <button onclick="runCall('/api/demo/isolation', 'GET')">🛡️ Isolation (ACID)</button>
+                        <button onclick="runCall('/api/audit-log', 'GET')">📜 Audit Logs (Trigger)</button>
+                    </div>
+                </div>
+
+                <!-- Performance Section -->
+                <div>
+                    <h3 style="color: var(--primary); margin-bottom: 12px; font-size: 0.9rem; text-transform: uppercase;">Performance & Scale</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button onclick="runCall('/api/demo/performance', 'GET')">⚡ Index Benchmark</button>
+                        <button onclick="runCall('/api/demo/partitioning', 'GET')">📂 Partition Demo</button>
+                        <button onclick="runCall('/api/products', 'GET')">📦 View Products</button>
+                    </div>
+                </div>
+
+                <!-- Analytics Section -->
+                <div>
+                    <h3 style="color: var(--accent); margin-bottom: 12px; font-size: 0.9rem; text-transform: uppercase;">Analytics & Reporting</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button onclick="runCall('/api/reports/trend', 'GET')">📈 Sales Trends</button>
+                        <button onclick="runCall('/api/reports/daily-sales', 'GET')">📊 Daily Sales</button>
+                        <button style="background: rgba(192, 132, 252, 0.1); border-color: var(--accent); color: var(--accent);" onclick="runCall('/api/demo/seed-sales', 'POST')">🌱 Seed Analytics Data</button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="status" id="status">Ready.</div>
-        <pre id="output">// JSON Response will appear here...</pre>
+
+        <div class="main-content">
+            <section class="glass-panel response-area">
+                <div class="response-header">
+                    <h2 id="endpoint-name">Response Output</h2>
+                    <div class="status-badge" id="status-badge">Ready</div>
+                </div>
+                <pre id="output">// Select an operation above to view the database interaction...</pre>
+            </section>
+
+            <aside class="sidebar">
+                <div class="glass-panel info-card">
+                    <h3>Latest Order Summary</h3>
+                    <div id="order-placeholder" style="color: var(--text-muted); font-size: 0.9rem;">
+                        No orders created in this session yet.
+                    </div>
+                    <div id="order-summary" class="order-summary">
+                        <div class="summary-item">
+                            <span>Order ID:</span>
+                            <span id="sum-id" style="color: var(--accent); font-weight: 600;">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Total:</span>
+                            <span id="sum-total" style="color: var(--success); font-weight: 600;">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Time:</span>
+                            <span id="sum-time">-</span>
+                        </div>
+                        <div class="item-list" id="sum-items">
+                            <!-- Items will be injected here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel info-card">
+                    <button style="width: 100%; margin-bottom: 10px;" onclick="runCall('/api/alerts', 'GET')">🔔 System Alerts</button>
+                    <h3 style="margin-top: 15px;">Fat Database Model</h3>
+                    <p style="font-size: 0.85rem; line-height: 1.6; color: var(--text-muted);">
+                        This system uses <b>PostgreSQL 18</b> advanced features.
+                        <br><br>
+                        <b>Triggers:</b> Audit, Stock, Alerts.
+                        <br><b>Procedures:</b> Atomic Orders.
+                        <br><b>Partitioning:</b> Monthly logs.
+                    </p>
+                </div>
+            </aside>
+        </div>
     </div>
 
     <script>
         const output = document.getElementById('output');
-        const status = document.getElementById('status');
+        const badge = document.getElementById('status-badge');
+        const endpointDisplay = document.getElementById('endpoint-name');
 
         async function runCall(url, method) {
-            status.innerText = `Calling ${method} ${url}...`;
+            endpointDisplay.innerText = `${method} ${url}`;
+            badge.innerText = 'Requesting...';
+            badge.style.color = 'var(--primary)';
+            
             try {
-                const res = await fetch(url);
+                const options = { method };
+                const res = await fetch(url, options);
                 const data = await res.json();
+                
+                // Pretty print the JSON
                 output.innerText = JSON.stringify(data, null, 2);
-                status.innerText = `Success: ${url}`;
+                
+                // Show tip if trend is empty
+                if (url === '/api/reports/trend' && data.length === 0) {
+                    output.innerText += "\n\n/* TIP: Trend is empty. Use 'Seed Analytics Data' button to generate 30 days of sales. */";
+                }
+
+                badge.innerText = `Success (${res.status})`;
+                badge.style.color = 'var(--success)';
             } catch (err) {
                 output.innerText = 'Error: ' + err.message;
-                status.innerText = 'Failed.';
+                badge.innerText = 'Error';
+                badge.style.color = 'var(--error)';
             }
         }
 
         async function createOrder() {
-            status.innerText = 'Creating order...';
+            endpointDisplay.innerText = 'POST /api/orders';
+            badge.innerText = 'Creating...';
+            badge.style.color = 'var(--accent)';
+            
             try {
                 const res = await fetch('/api/orders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        customer_name: "Demo User",
+                        customer_name: "Dashboard User " + Math.floor(Math.random() * 1000),
                         items: [{ product_id: 1, quantity: 1 }]
                     })
                 });
                 const data = await res.json();
                 output.innerText = JSON.stringify(data, null, 2);
-                status.innerText = 'Order Created Successfully.';
+                
+                if (res.ok) {
+                    badge.innerText = 'Order Created';
+                    badge.style.color = 'var(--success)';
+                    updateSummary(data);
+                } else {
+                    badge.innerText = 'Failed';
+                    badge.style.color = 'var(--error)';
+                }
             } catch (err) {
                 output.innerText = 'Error: ' + err.message;
-                status.innerText = 'Failed.';
+                badge.innerText = 'Error';
+                badge.style.color = 'var(--error)';
             }
+        }
+
+        function updateSummary(data) {
+            document.getElementById('order-placeholder').style.display = 'none';
+            const summary = document.getElementById('order-summary');
+            summary.style.display = 'block';
+
+            document.getElementById('sum-id').innerText = '#' + data.order_id;
+            document.getElementById('sum-total').innerText = '$' + data.total_amount;
+            document.getElementById('sum-time').innerText = new Date(data.created_at).toLocaleTimeString();
+
+            const itemsList = document.getElementById('sum-items');
+            itemsList.innerHTML = '<strong>Items & Updated Stock:</strong>';
+            
+            data.items.forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'item-row';
+                row.innerHTML = `
+                    <span>${item.name} (x${item.quantity})</span>
+                    <span style="color: ${item.current_stock < 5 ? 'var(--error)' : 'var(--text-muted)'}">
+                        Stock: ${item.current_stock}
+                    </span>
+                `;
+                itemsList.appendChild(row);
+            });
         }
     </script>
 </body>

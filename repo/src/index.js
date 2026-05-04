@@ -59,23 +59,32 @@ app.post('/api/products', async (req, res) => {
   }
 });
 
-// PUT /api/products/:id (Supports partial updates)
+// PUT /api/products/:id (Supports partial updates with dynamic query building)
 app.put('/api/products/:id', async (req, res) => {
-  const { name, price, stock, category } = req.body;
+  const fields = ['name', 'price', 'stock', 'category'];
+  const updates = [];
+  const values = [];
+  
+  fields.forEach((field, index) => {
+    if (req.body[field] !== undefined) {
+      values.push(req.body[field]);
+      updates.push(`${field} = $${values.length}`);
+    }
+  });
+
+  if (updates.length === 0) {
+    return res.status(400).json({ error: 'No fields provided for update' });
+  }
+
+  values.push(req.params.id);
+  const query = `UPDATE products SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = $${values.length} RETURNING *`;
+
   try {
-    const { rows } = await pool.query(
-      `UPDATE products 
-       SET name = COALESCE($1, name), 
-           price = COALESCE($2, price), 
-           stock = COALESCE($3, stock), 
-           category = COALESCE($4, category),
-           updated_at = CURRENT_TIMESTAMP 
-       WHERE id = $5 RETURNING *`,
-      [name, price, stock, category, req.params.id]
-    );
+    const { rows } = await pool.query(query, values);
     if (rows.length === 0) return res.status(404).json({ error: 'Product not found' });
     res.json(rows[0]);
   } catch (err) {
+    console.error('Update error:', err.message);
     res.status(400).json({ error: err.message });
   }
 });

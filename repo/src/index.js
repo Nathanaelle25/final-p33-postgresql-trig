@@ -275,6 +275,19 @@ app.post('/api/demo/seed-sales', async (req, res) => {
   }
 });
 
+// GET /api/demo/low-stock-view : Show low stock products view
+app.get('/api/demo/low-stock-view', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM v_low_stock_products');
+    res.json({
+      message: "View Demo: Displaying products that fell below minimum stock level (Triggers also fire alerts for these).",
+      data: rows
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {

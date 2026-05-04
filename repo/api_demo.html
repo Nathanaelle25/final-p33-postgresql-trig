@@ -220,33 +220,44 @@
 
         <div class="glass-panel" style="margin-bottom: 25px;">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 25px;">
-                <!-- Transactions Section -->
+                <!-- CRUD & Procedures Section -->
                 <div>
-                    <h3 style="color: var(--secondary); margin-bottom: 12px; font-size: 0.9rem; text-transform: uppercase;">Transactions & Triggers</h3>
+                    <h3 style="color: var(--secondary); margin-bottom: 12px; font-size: 0.9rem; text-transform: uppercase;">1. CRUD & Stored Procedures</h3>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <button class="primary" onclick="createOrder()">🛒 Quick Order (SP)</button>
-                        <button onclick="runCall('/api/demo/isolation', 'GET')">🛡️ Isolation (ACID)</button>
-                        <button onclick="runCall('/api/audit-log', 'GET')">📜 Audit Logs (Trigger)</button>
+                        <button class="primary" onclick="createOrder()">🛒 Create Order (SP)</button>
+                        <button onclick="runCall('/api/products', 'GET')">📦 Read Products</button>
+                        <button onclick="updatePrice()">🏷️ Update Price (CRUD)</button>
+                        <button onclick="deleteProduct()" style="border-color: var(--error); color: var(--error);">🗑️ Delete Product (CRUD)</button>
                     </div>
                 </div>
 
-                <!-- Performance Section -->
+                <!-- Triggers & Isolation Section -->
                 <div>
-                    <h3 style="color: var(--primary); margin-bottom: 12px; font-size: 0.9rem; text-transform: uppercase;">Performance & Scale</h3>
+                    <h3 style="color: var(--success); margin-bottom: 12px; font-size: 0.9rem; text-transform: uppercase;">2. Triggers & ACID</h3>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <button onclick="runCall('/api/demo/performance', 'GET')">⚡ Index Benchmark</button>
-                        <button onclick="runCall('/api/demo/partitioning', 'GET')">📂 Partition Demo</button>
-                        <button onclick="runCall('/api/products', 'GET')">📦 View Products</button>
+                        <button onclick="runCall('/api/audit-log', 'GET')">📜 Audit Logs (Trigger)</button>
+                        <button onclick="runCall('/api/demo/isolation', 'GET')">🛡️ Isolation Demo (ACID)</button>
+                        <button onclick="runCall('/api/demo/low-stock-view', 'GET')">⚠️ Low Stock (Alert Trig)</button>
                     </div>
                 </div>
 
                 <!-- Analytics Section -->
                 <div>
-                    <h3 style="color: var(--accent); margin-bottom: 12px; font-size: 0.9rem; text-transform: uppercase;">Analytics & Reporting</h3>
+                    <h3 style="color: var(--accent); margin-bottom: 12px; font-size: 0.9rem; text-transform: uppercase;">3. Views & Analytics</h3>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <button onclick="runCall('/api/reports/trend', 'GET')">📈 Sales Trends</button>
-                        <button onclick="runCall('/api/reports/daily-sales', 'GET')">📊 Daily Sales</button>
+                        <button onclick="runCall('/api/reports/trend', 'GET')">📈 Sales Trends (Window)</button>
+                        <button onclick="runCall('/api/reports/daily-sales', 'GET')">📊 Daily Sales (View)</button>
                         <button style="background: rgba(192, 132, 252, 0.1); border-color: var(--accent); color: var(--accent);" onclick="runCall('/api/demo/seed-sales', 'POST')">🌱 Seed Analytics Data</button>
+                    </div>
+                </div>
+
+                <!-- Performance Section -->
+                <div>
+                    <h3 style="color: var(--primary); margin-bottom: 12px; font-size: 0.9rem; text-transform: uppercase;">4. Scale & Performance</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button onclick="runCall('/api/demo/performance', 'GET')">⚡ Index Benchmark</button>
+                        <button onclick="runCall('/api/demo/partitioning', 'GET')">📂 Partition Demo</button>
+                        <button onclick="runCall('/api/alerts', 'GET')">🔔 System Alerts</button>
                     </div>
                 </div>
             </div>
@@ -362,6 +373,52 @@
                 output.innerText = 'Error: ' + err.message;
                 badge.innerText = 'Error';
                 badge.style.color = 'var(--error)';
+            }
+        }
+
+        async function updatePrice() {
+            const id = prompt("Enter Product ID to update price (e.g. 1):", "1");
+            if (!id) return;
+            const price = prompt("Enter new price:", "99.99");
+            if (!price) return;
+
+            endpointDisplay.innerText = `PUT /api/products/${id}`;
+            badge.innerText = 'Updating...';
+            
+            try {
+                const res = await fetch(`/api/products/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ price: parseFloat(price) })
+                });
+                const data = await res.json();
+                output.innerText = JSON.stringify(data, null, 2);
+                badge.innerText = res.ok ? 'Updated' : 'Error';
+            } catch (err) {
+                output.innerText = 'Error: ' + err.message;
+            }
+        }
+
+        async function deleteProduct() {
+            const id = prompt("Enter Product ID to DELETE:", "1");
+            if (!id) return;
+            if (!confirm(`Are you sure you want to delete Product #${id}?`)) return;
+
+            endpointDisplay.innerText = `DELETE /api/products/${id}`;
+            badge.innerText = 'Deleting...';
+            
+            try {
+                const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+                if (res.status === 204) {
+                    output.innerText = "// Product deleted successfully (Status 204 No Content)";
+                    badge.innerText = 'Deleted';
+                } else {
+                    const data = await res.json();
+                    output.innerText = JSON.stringify(data, null, 2);
+                    badge.innerText = 'Error';
+                }
+            } catch (err) {
+                output.innerText = 'Error: ' + err.message;
             }
         }
 

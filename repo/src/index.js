@@ -9,6 +9,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..'))); // Serve static files from repo directory
 
+// Redirect root to the API demo dashboard
+app.get('/', (req, res) => {
+  res.redirect('/api_demo.html');
+});
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });

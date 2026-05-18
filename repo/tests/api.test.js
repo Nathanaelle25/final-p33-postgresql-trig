@@ -1,41 +1,9 @@
 const request = require('supertest');
-const express = require('express');
-const { Pool } = require('pg');
+const app = require('../src/index'); // import your actual app
 require('dotenv').config();
+const { Pool } = require('pg');
 
-// Re-create app inline for testing (avoids server.listen conflict)
-const app = express();
-app.use(express.json());
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
-app.get('/api/products', async (req, res) => {
-  try {
-    const { rows } = await pool.query('SELECT * FROM products');
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-app.get('/api/reports/low-stock', async (req, res) => {
-  try {
-    const { rows } = await pool.query('SELECT * FROM v_low_stock_products');
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-app.get('/api/reports/trend', async (req, res) => {
-  try {
-    const { rows } = await pool.query('SELECT * FROM v_sales_trend_30days');
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-app.post('/api/orders', async (req, res) => {
-  const { customer_name, items } = req.body;
-  try {
-    await pool.query('CALL sp_create_order($1, $2)', [customer_name, JSON.stringify(items)]);
-    res.status(201).json({ message: 'Order created successfully' });
-  } catch (err) { res.status(400).json({ error: err.message }); }
-});
 
 describe('Products API', () => {
   test('GET /api/products returns array', async () => {
@@ -46,10 +14,12 @@ describe('Products API', () => {
 });
 
 describe('Reports API', () => {
-  test('GET /api/reports/low-stock returns array', async () => {
-    const res = await request(app).get('/api/reports/low-stock');
+  test('GET /api/demo/low-stock-view returns array', async () => {
+    const res = await request(app).get('/api/demo/low-stock-view');
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
+    // Since the actual API returns { message: "...", data: rows }, check res.body.data
+    expect(res.body).toHaveProperty('data');
+    expect(Array.isArray(res.body.data)).toBe(true);
   });
 
   test('GET /api/reports/trend returns array', async () => {
@@ -68,4 +38,6 @@ describe('Orders API', () => {
   });
 });
 
-afterAll(async () => { await pool.end(); });
+afterAll(async () => { 
+  await pool.end(); 
+});

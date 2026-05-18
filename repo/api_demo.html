@@ -209,9 +209,67 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+        /* Floating Theme Toggle Button */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 10px 20px;
+            border-radius: 50px;
+            background: var(--panel);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .theme-toggle:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Light Theme Overrides */
+        body.light-theme {
+            --bg: #f8fafc;
+            --panel: rgba(255, 255, 255, 0.75);
+            --text: #0f172a;
+            --text-muted: #475569;
+            background: radial-gradient(circle at top right, #e0e7ff, #f8fafc);
+        }
+        body.light-theme button {
+            background: rgba(15, 23, 42, 0.05);
+            color: var(--text);
+            border: 1px solid rgba(15, 23, 42, 0.1);
+        }
+        body.light-theme button:hover {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        body.light-theme button.primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        body.light-theme pre {
+            background: rgba(15, 23, 42, 0.03);
+            color: #0f766e;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+        }
+        body.light-theme .theme-toggle {
+            border: 1px solid rgba(15, 23, 42, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
     </style>
 </head>
 <body>
+    <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">☀️ Light Mode</button>
     <div class="container">
         <header>
             <h1>Fat Database Explorer</h1>
@@ -455,6 +513,16 @@
                 `;
                 itemsList.appendChild(row);
             });
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const btn = document.getElementById('theme-btn');
+            if (document.body.classList.contains('light-theme')) {
+                btn.innerHTML = '🌙 Dark Mode';
+            } else {
+                btn.innerHTML = '☀️ Light Mode';
+            }
         }
     </script>
 </body>

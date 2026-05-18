@@ -226,6 +226,7 @@
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <button class="primary" onclick="createOrder()">🛒 Create Order (SP)</button>
                         <button onclick="runCall('/api/products', 'GET')">📦 Read Products</button>
+                        <button onclick="searchProducts()">🔍 Search Products</button>
                         <button onclick="updatePrice()">🏷️ Update Price (CRUD)</button>
                         <button onclick="deleteProduct()" style="border-color: var(--error); color: var(--error);">🗑️ Delete Product (CRUD)</button>
                     </div>
@@ -398,6 +399,14 @@
             } catch (err) {
                 output.innerText = 'Error: ' + err.message;
             }
+        }
+
+        async function searchProducts() {
+            const keyword = prompt("Enter search keyword (e.g. 'Product'):", "");
+            if (keyword === null) return; // User cancelled
+            
+            const url = keyword ? `/api/products?search=${encodeURIComponent(keyword)}` : '/api/products';
+            await runCall(url, 'GET');
         }
 
         async function deleteProduct() {
